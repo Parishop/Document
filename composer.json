@@ -1,7 +1,6 @@
 {
     "name": "parishop/document",
     "description": "Manage Header Meta Tags",
-    "minimum-stability": "dev",
     "license": "MIT",
     "authors": [
         {
@@ -9,6 +8,11 @@
             "email": "vadim@meling.ru"
         }
     ],
+    "autoload": {
+        "psr-4": {
+            "Parishop\\": "src/Parishop"
+        }
+    },
     "require": {
         "phpixie/template": "3.0.1"
     }
