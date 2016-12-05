@@ -9,6 +9,12 @@ namespace Parishop;
 class Document implements \PHPixie\Template\Extensions\Extension
 {
     /**
+     * @var \PHPixie\Framework\Builder
+     * @since 1.0.1
+     */
+    protected $builder;
+
+    /**
      * @var string
      * @since 1.0
      */
@@ -49,6 +55,15 @@ class Document implements \PHPixie\Template\Extensions\Extension
      * @since 1.0
      */
     protected $scripts = [];
+
+    /**
+     * @param \PHPixie\Framework\Builder $builder
+     * @since 1.0.1
+     */
+    public function __construct($builder)
+    {
+        $this->builder = $builder;
+    }
 
     /**
      * @param string $href
@@ -128,6 +143,15 @@ class Document implements \PHPixie\Template\Extensions\Extension
     }
 
     /**
+     * @return \PHPixie\ORM\Drivers\Driver\PDO\Entity
+     * @since 1.0.1
+     */
+    public function customer()
+    {
+        return $this->builder->context()->authContext()->user('customer');
+    }
+
+    /**
      * @return array
      * @since 1.0
      */
@@ -186,6 +210,10 @@ class Document implements \PHPixie\Template\Extensions\Extension
             'getMeta'    => 'getMeta',
             'getLinks'   => 'getLinks',
             'getScripts' => 'getScripts',
+            'url'        => 'url',
+            'path'       => 'path',
+            'customer'   => 'customer',
+            'user'       => 'user',
         ];
     }
 
@@ -196,6 +224,34 @@ class Document implements \PHPixie\Template\Extensions\Extension
     public function name()
     {
         return 'document';
+    }
+
+    /**
+     * @param string $processor
+     * @param string $action
+     * @param string $id
+     * @param array  $attributes
+     * @param string $resolverPath
+     * @return string
+     * @since 1.0.1
+     */
+    public function path($processor, $action = null, $id = null, array $attributes = [], $resolverPath = null)
+    {
+        if($resolverPath === null) {
+            $bundleName   = $this->builder->context()->httpContext()->request()->attributes()->get('bundle');
+            $resolverPath = $bundleName . '.processor';
+            if($action !== null) {
+                $resolverPath = $bundleName . '.action';
+                if($id !== null) {
+                    $resolverPath = $bundleName . '.id';
+                }
+            }
+        }
+        $attributes['processor'] = $processor;
+        $attributes['action']    = $action;
+        $attributes['id']        = $id;
+
+        return $this->builder->http()->routeTranslator()->generatePath($resolverPath, $attributes);
     }
 
     /**
@@ -279,6 +335,46 @@ class Document implements \PHPixie\Template\Extensions\Extension
         }
 
         return $this->title;
+    }
+
+    /**
+     * @param string $processor
+     * @param string $action
+     * @param string $id
+     * @param array  $attributes
+     * @param string $resolverPath
+     * @return \PHPixie\HTTP\Messages\URI\SAPI
+     * @since 1.0.1
+     */
+    public function url($processor = null, $action = null, $id = null, array $attributes = [], $resolverPath = null)
+    {
+        if($resolverPath === null) {
+            $bundleName   = $this->builder->context()->httpContext()->request()->attributes()->get('bundle');
+            $resolverPath = $bundleName . '.default';
+            if($processor) {
+                $resolverPath = $bundleName . '.processor';
+                if($action !== null) {
+                    $resolverPath = $bundleName . '.action';
+                    if($id !== null) {
+                        $resolverPath = $bundleName . '.id';
+                    }
+                }
+            }
+        }
+        $attributes['processor'] = $processor;
+        $attributes['action']    = $action;
+        $attributes['id']        = $id;
+
+        return $this->builder->http()->routeTranslator()->generateUri($resolverPath, $attributes);
+    }
+
+    /**
+     * @return \PHPixie\ORM\Drivers\Driver\PDO\Entity
+     * @since 1.0.1
+     */
+    public function user()
+    {
+        return $this->builder->context()->authContext()->user();
     }
 
     /**
